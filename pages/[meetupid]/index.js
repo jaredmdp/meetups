@@ -1,44 +1,63 @@
 import MeetupDetail from "../../components/meetups/MeetupDetail";
+import { MongoClient, ObjectId } from "mongodb";
 
-function MeetupDetails() {
+function MeetupDetails(props) {
     return (
-        <MeetupDetail meetups={props.meetups} />
+        <MeetupDetail
+            image={props.meetupData.image}
+            title={props.meetupData.title}
+            address={props.meetupData.address}
+            description={props.meetupData.description}
+        />
     );
 };
 
 export async function getStaticPaths() {
+    //fetch data from API
+    const client = await MongoClient.connect(
+        'mongodb+srv://Mandapj:FGihrxQncVvwzfJ6@cluster0.pd7ri3k.mongodb.net/meetups');
+    const db = client.db();
+    //insert into DB
+    const meetupsCollection = db.collection('meetups');
+
+    const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
+
+    client.close();
+
     return {
         fallback: false,
-        paths: [
-            {
-                params: {
-                    meetupid: 'm1',
-                },
-            },
-            {
-                params: {
-                    meetupid: 'm2',
-                },
-            },
-        ],
+        paths: meetups.map(meetup => ({
+            params: { meetupId: meetup._id.toString() },
+        }))
     }
 }
 
 export async function getStaticProps(context) {
     //fetch data for a single meetup
-    const meetupId = context.params.meetupId.toString();
+    const meetupId = context.params.meetupId;
+
+    //fetch data from API
+    const client = await MongoClient.connect(
+        'mongodb+srv://Mandapj:FGihrxQncVvwzfJ6@cluster0.pd7ri3k.mongodb.net/meetups');
+    const db = client.db();
+    //insert into DB
+    const meetupsCollection = db.collection('meetups');
+
+    const selectedMeetup = await meetupsCollection.findOne({ _id: ObjectId(meetupId) });
+
+    client.close();
 
     return {
         props: {
             meetupData: {
-                image: 'https://cdn.britannica.com/90/153890-050-32CB447A/Administration-Building-University-of-Manitoba-Winnipeg-Canada.jpg',
-                id: meetupId,
-                title: 'First Meetup',
-                address: 'Some Adress Street',
-                description: 'Our first meetup',
+                id: selectedMeetup._id.toString(),
+                title: selectedMeetup.title,
+                address: selectedMeetup.address,
+                image: selectedMeetup.image,
+                description: selectedMeetup.description,
             }
         }
-    }
-}
+    };
+};
 
 export default MeetupDetails;
