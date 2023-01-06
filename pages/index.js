@@ -1,15 +1,5 @@
 import MeetupList from '../components/meetups/MeetupList'
-import Layout from '../components/layout/Layout';
-
-const TEST = [
-  {
-    id: 'm1',
-    title: 'First Meetup',
-    image: 'https://cdn.britannica.com/90/153890-050-32CB447A/Administration-Building-University-of-Manitoba-Winnipeg-Canada.jpg',
-    address: 'some address, 12345 Winnipeg Manitoba',
-    description: 'this is a meetup at university',
-  }
-];
+import { MongoClient } from 'mongodb';
 
 function Homepage(props) {
   return (
@@ -19,9 +9,25 @@ function Homepage(props) {
 
 //executes during prerendering process, wont go to visitor's machines
 export async function getStaticProps() {
+  //fetch data from API
+  const client = await MongoClient.connect(
+    'mongodb+srv://Mandapj:FGihrxQncVvwzfJ6@cluster0.pd7ri3k.mongodb.net/meetups');
+  const db = client.db();
+  //insert into DB
+  const meetupsCollection = db.collection('meetups');
+
+  const meetups = await meetupsCollection.find().toArray();
+
+  client.close();
+
   return {
     props: {
-      meetups: TEST
+      meetups: meetups.map(meetup => ({
+        title: meetup.title,
+        address: meetup.address,
+        image: meetup.image,
+        id: meetup._id.toString()
+      })),
     },
     revalidate: 10
   };
