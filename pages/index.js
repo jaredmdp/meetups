@@ -11,11 +11,20 @@ const TEST = [
   }
 ];
 
-function Homepage() {
+function Homepage(props) {
   return (
-    <MeetupList meetups={TEST} />
+    <MeetupList meetups={props.meetups} />
   )
 }
 
+//executes during prerendering process, wont go to visitor's machines
+export async function getStaticProps() {
+  return {
+    props: {
+      meetups: TEST
+    },
+    revalidate: 10
+  };
+}
 
 export default Homepage;
