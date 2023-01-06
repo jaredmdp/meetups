@@ -12,12 +12,12 @@ export async function getStaticPaths() {
         paths: [
             {
                 params: {
-                    meetupId: 'm1',
+                    meetupid: 'm1',
                 },
             },
             {
                 params: {
-                    meetupId: 'm2',
+                    meetupid: 'm2',
                 },
             },
         ],
@@ -26,9 +26,7 @@ export async function getStaticPaths() {
 
 export async function getStaticProps(context) {
     //fetch data for a single meetup
-    context.params.meetupId;
-
-    const meetupId = context.params.meetupId;
+    const meetupId = context.params.meetupId.toString();
 
     return {
         props: {
